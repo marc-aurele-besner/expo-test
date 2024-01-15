@@ -6,9 +6,11 @@ import { Contract, Wallet, providers } from 'ethers'
 import * as Counter from './assets/Counter.json'
 
 export default function App() {
-  const testFetch = async () => {
+  const [lastEthereumPrice, setLastEthereumPrice] = useState('')
+
+  const fetchEthPrice = useCallback(async () => {
     console.log('test')
-    fetch("https://api.coingecko.com/api/v3/coins/bitcoin", {
+    fetch("https://api.coingecko.com/api/v3/coins/ethereum", {
       method: "GET",
       headers: {
         Accept: 'application/json',
@@ -16,15 +18,14 @@ export default function App() {
       },
       timeout: 5000,
     },).then((result) => {
-      console.error('Response Status:', result.status);
-      console.error('Response Headers:', result.headers);
       return result.json();
     }).then((json) => {
-      console.error('JSON Response:', json);
+      setLastEthereumPrice(json.market_data.current_price.usd)
+      console.log('JSON Response:', json);
     }).catch((error) => {
       console.error('Fetch Error:', error);
     });
-  }
+  }, [setLastEthereumPrice])
   
   const provider = new providers.JsonRpcProvider(process.env.EXPO_PUBLIC_RPC_URL)
   const signer = new Wallet(process.env.EXPO_PUBLIC_PRIVATE_KEY, provider)
@@ -37,7 +38,7 @@ export default function App() {
     try {
       const number = await counter.number()
       setCurrentNumber(number.toString())
-      console.log('number', number)
+      console.log('number', number.toString())
     } catch (error) {
       console.error('error', error)
     }
@@ -68,7 +69,8 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
-      <Button title="Test Fetch" text= "Test Fetch" onPress={testFetch} />
+      <Button title="Fetch ETH Price" text= "Fetch ETH Price" onPress={fetchEthPrice} />
+      <Text>Last Ethereum Price: {lastEthereumPrice}</Text>
       <Button title="Set Counter" text= "Set Counter" onPress={setCounter} />
       <Button title="Get Counter" text= "Get Counter" onPress={getCounter} />
       <Button title="Increment Counter" text= "Increment Counter" onPress={incrementCounter} />
